@@ -402,8 +402,11 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
   }
 
   # Set up parallel processing
+  worker_count <- min(cores, length(mutants))
+  cat(sprintf("Starting mutation run with %d mutants across %d workers (requested cores: %d).\n",
+              length(mutants), worker_count, cores))
   future::plan(future::multisession, 
-               workers = min(cores, length(mutants)),
+               workers = worker_count,
                earlySignal = TRUE)
 
   mutant_ids <- names(mutants)
@@ -413,7 +416,18 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
   # Run tests in parallel with progress bar
   parallel_results <- furrr::future_map(
     pkg_dir_list,
-    function(pkg) suppressMessages(suppressWarnings(run_tests(pkg))),
+    function(pkg) {
+      start_time <- Sys.time()
+      res <- tryCatch(
+        suppressMessages(suppressWarnings(run_tests(pkg))),
+        error = function(e) list(result = FALSE, error = conditionMessage(e))
+      )
+      list(
+        result = res,
+        duration = as.numeric(difftime(Sys.time(), start_time, units = "secs")),
+        pkg = pkg
+      )
+    },
     .progress = TRUE,
     .options = furrr::furrr_options(seed = TRUE)
   )
@@ -422,11 +436,21 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
   package_mutants <- list()
   test_results <- list()
   for (mutant_id in mutant_ids) {
-    test_result <- parallel_results[[mutant_id]]
+    result_entry <- parallel_results[[mutant_id]]
+    test_result <- result_entry$result
+    duration <- result_entry$duration
+    pkg_from_result <- result_entry$pkg
+
+    if (is.list(test_result) && !is.null(test_result$error)) {
+      cat(sprintf("Mutant %s: run_tests error: %s\n", mutant_id, test_result$error))
+      test_result <- FALSE
+    }
+
     pkg_copy_dir <- mutants[[mutant_id]]$pkg
 
-    if (is.null(test_result) || length(test_result) == 0) {
-      cat(sprintf("Mutant %s: Compilation/test execution failed, marking as KILLED.\n", mutant_id))
+    if (is.null(test_result) || length(test_result) == 0 || !is.logical(test_result)) {
+      cat(sprintf("Mutant %s: Invalid/empty test result (%s), marking as KILLED.\n", mutant_id,
+                  paste(capture.output(str(test_result)), collapse = " ")))
       test_result <- FALSE
     }
 
@@ -437,6 +461,11 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
       cat(sprintf("Mutant %s: %s\n", mutant_id, status))
       cat(sprintf("Mutation info: %s\n", mutation_info))
       cat(sprintf("   Result: %s\n\n", status))
+      if (!is.null(duration)) cat(sprintf("   Duration: %.2fs\n\n", duration))
+      if (!identical(pkg_from_result, pkg_copy_dir)) {
+        cat(sprintf("   Note: pkg path mismatch? expected %s, got %s\n\n",
+                    pkg_copy_dir, pkg_from_result))
+      }
     }
 
     package_mutants[[mutant_id]] <- list(
