@@ -365,7 +365,9 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
   run_tests <- function(pkg_dir) {
     # Remember which devices were already open
     orig_dev <- grDevices::dev.list()  # NULL or a named integer vector
-    
+    # Force plots to a null PDF device so tests don't touch the interactive device
+    plot_opts <- list(device = function(...) grDevices::pdf(file = NULL))
+
     old_wd <- getwd()
     on.exit({
       setwd(old_wd)
@@ -375,11 +377,19 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
         to_close <- setdiff(open_now, orig_dev)
         for (d in to_close) try(grDevices::dev.off(d), silent = TRUE)
       }
+      # If tests closed the original device, reopen a null device to keep future happy
+      if (!is.null(orig_dev) && !identical(grDevices::dev.list(), orig_dev)) {
+        message("Restoring default graphics device to avoid future device warnings.")
+        try(grDevices::pdf(file = NULL), silent = TRUE)
+      }
     }, add = TRUE)
     setwd(pkg_dir)
 
     loaded <- tryCatch(
-      { devtools::load_all(quiet = TRUE); TRUE },
+      {
+        withr::with_options(plot_opts, devtools::load_all(quiet = TRUE))
+        TRUE
+      },
       error = function(e) {
         message("Load error: ", e$message)
         FALSE
@@ -388,11 +398,11 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
     if (!loaded) return(FALSE)
 
     passed <- tryCatch(
-      {
+      withr::with_options(plot_opts, {
         tr <- testthat::test_dir("tests/testthat", reporter = "silent")
         num_failed <- sum(tr$failed)
         num_failed == 0
-      },
+      }),
       error = function(e) {
         message("Test error: ", e$message)
         FALSE
