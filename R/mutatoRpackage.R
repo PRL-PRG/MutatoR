@@ -411,6 +411,10 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
     passed
   }
 
+  options(future.debug = TRUE)  # optional, for diagnosing
+
+  old_plan <- future::plan()
+  on.exit(future::plan(old_plan), add = TRUE)
   # Set up parallel processing
   worker_count <- min(cores, length(mutants))
   cat(sprintf("Starting mutation run with %d mutants across %d workers (requested cores: %d).\n",
@@ -519,9 +523,7 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
       }
     }
   }
-
-  # Clean up the parallel workers
-  future::plan(future::sequential)
+  
   gc()  # Force garbage collection to clean up connections
 
   # Summarize test results
