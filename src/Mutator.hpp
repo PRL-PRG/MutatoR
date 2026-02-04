@@ -2,10 +2,13 @@
 #ifndef MUTATOR_H
 #define MUTATOR_H
 
+#include <string>
+#include <vector>
+#include <memory>
+#include <utility>
 #include "OperatorPos.hpp"
 #include <R.h>
 #include <Rinternals.h>
-#include <vector>
 
 // Class to Handle Mutation Application
 class Mutator {
