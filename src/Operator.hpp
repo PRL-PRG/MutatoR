@@ -3,7 +3,8 @@
 #define OPERATOR_H
 
 // Abstract Base Class
-#include <cpp11.hpp>
+#include <string>
+#include <memory>
 #include <R.h>
 #include <Rinternals.h>
 #include <Rembedded.h>

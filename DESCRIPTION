@@ -8,6 +8,16 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Suggests: 
-    testthat (>= 3.0.0)
+Imports:
+    jsonlite,
+    httr,
+    parallel,
+    devtools,
+    testthat,
+    future,
+    furrr
+Suggests:
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3

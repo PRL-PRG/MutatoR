@@ -2,11 +2,12 @@
 #ifndef AST_HANDLER_H
 #define AST_HANDLER_H
 
+#include <string>
+#include <vector>
+#include <memory>
 #include "OperatorPos.hpp"
 #include <R.h>
 #include <Rinternals.h>
-#include <vector>
-#include <memory>
 
 // Class to Handle AST Traversal and Operator Gathering
 class ASTHandler {

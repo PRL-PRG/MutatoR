@@ -1,4 +1,3 @@
-#include <cpp11.hpp>
 #include <R.h>
 #include <Rinternals.h>
 #include <Rembedded.h>
