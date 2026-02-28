@@ -51,33 +51,12 @@ test_check(\"%s\")", pkg_name, pkg_name), file.path(pkg_dir, "tests", "testthat.
   expect_equal(my_abs(0), 0)
 })", pkg_name), file.path(pkg_dir, "tests", "testthat", "test-my-abs.R"))
   
-  # In a real test environment, we would test the full functionality
-  # but for unit testing purposes, we'll mock the function to avoid
-  # actually running all the tests, which would be time-consuming
-  
-  # Mock functions for testing
-  with_mock(
-    `MutatoR::mutate_file_new` = function(sample_file) {
-      # Return mock mutated file info
-      return(list(
-        list(
-          path = tempfile(fileext = ".R"),
-          mutation_info = "Mock mutation: operator < changed to >"
-        )
-      ))
-    },
-    `MutatoR::run_package_test` = function(pkg_dir) {
-      # Return a mock test result (TRUE = survived, FALSE = killed)
-      return(FALSE)
-    },
-    {
-      # Call the function with a small number of cores to speed up the test
-      result <- mutate_package(pkg_dir, cores = 1)
-      
-      # Check the structure of the result
-      expect_true(is.list(result))
-      expect_true("package_mutants" %in% names(result))
-      expect_true("test_results" %in% names(result))
-    }
-  )
+  # Run mutation on the minimal package
+  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+
+  # Check the structure of the result
+  expect_true(is.list(result))
+  expect_true("package_mutants" %in% names(result))
+  expect_true("test_results" %in% names(result))
+  expect_true(length(result$test_results) > 0)
 }) 

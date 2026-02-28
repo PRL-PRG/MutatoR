@@ -1,6 +1,8 @@
-test_that("run_package_test can check test results", {
-  # Skip test if devtools is not available
+test_that("mutate_package returns results for a valid package", {
+  # Skip test if dependencies are not available
   skip_if_not_installed("devtools")
+  skip_if_not_installed("furrr")
+  skip_if_not_installed("future")
   
   # Mock a small package directory structure
   temp_dir <- tempfile()
@@ -44,39 +46,59 @@ test_check(\"testpkg\")", file.path(pkg_dir, "tests", "testthat.R"))
   expect_equal(add(2, 2), 4)
 })", file.path(pkg_dir, "tests", "testthat", "test-add.R"))
   
-  # We can only test that the function runs without errors
-  # since we can't actually load a mock package in a test
-  expect_error(run_package_test(pkg_dir), NA)
+  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+
+  expect_true(is.list(result))
+  expect_true("package_mutants" %in% names(result))
+  expect_true("test_results" %in% names(result))
+  expect_true(length(result$test_results) > 0)
 })
 
-test_that("run_package_test returns appropriate value on compilation error", {
-  # Skip test if devtools is not available
+test_that("mutate_package marks mutants as killed when package tests fail", {
+  # Skip test if dependencies are not available
   skip_if_not_installed("devtools")
+  skip_if_not_installed("furrr")
+  skip_if_not_installed("future")
   
-  # Create an invalid package
+  # Create a package with a failing test
   temp_dir <- tempfile()
   dir.create(temp_dir)
   on.exit(unlink(temp_dir, recursive = TRUE))
   
-  # Create a simple package structure with syntax error
+  # Create a simple package structure
   pkg_dir <- file.path(temp_dir, "badpkg")
   dir.create(pkg_dir)
   dir.create(file.path(pkg_dir, "R"), recursive = TRUE)
+  dir.create(file.path(pkg_dir, "tests", "testthat"), recursive = TRUE)
   
   writeLines("Package: badpkg
 Version: 0.1.0
 Title: Bad Package
-Description: A package with syntax errors.
+Description: A package with failing tests.
 Author: Test Author
-License: MIT", file.path(pkg_dir, "DESCRIPTION"))
+License: MIT
+RoxygenNote: 7.1.1", file.path(pkg_dir, "DESCRIPTION"))
+
+  writeLines("exportPattern(\"^[[:alpha:]]+\")", file.path(pkg_dir, "NAMESPACE"))
   
-  # Create an R file with a syntax error
-  writeLines("bad_function <- function() {
-  return(x  # Missing closing parenthesis
+  # Create a valid function
+  writeLines("bad_function <- function(x) {
+  x + 1
 }", file.path(pkg_dir, "R", "bad.R"))
+
+  # Create test harness and a failing test
+  writeLines("library(testthat)
+library(badpkg)
+
+test_check(\"badpkg\")", file.path(pkg_dir, "tests", "testthat.R"))
+
+  writeLines("test_that(\"bad_function fails intentionally\", {
+  expect_equal(bad_function(1), 999)
+})", file.path(pkg_dir, "tests", "testthat", "test-bad.R"))
   
-  # We expect the function to return NULL for a package with compilation errors
-  # But since this might produce different behaviors in different environments,
-  # we'll just check it runs without throwing an unhandled error
-  expect_error(run_package_test(pkg_dir), NA)
+  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+
+  expect_true(is.list(result))
+  expect_true(length(result$test_results) > 0)
+  expect_true(any(vapply(result$test_results, isFALSE, logical(1))))
 }) 
