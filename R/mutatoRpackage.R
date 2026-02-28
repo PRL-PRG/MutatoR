@@ -345,7 +345,16 @@ mutate_file <- function(src_file, out_dir = "mutations") {
 
 # High-level: mutate every R file in a package, run tests in parallel, and summarize
 mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
-                           isFullLog = FALSE, detectEqMutants = FALSE) {
+                           isFullLog = FALSE, detectEqMutants = FALSE,
+                           mutation_dir = NULL) {
+  if (is.null(mutation_dir)) {
+    mutation_dir <- tempfile("mutations_")
+    dir.create(mutation_dir)
+    on.exit(unlink(mutation_dir, recursive = TRUE), add = TRUE)
+  } else {
+    dir.create(mutation_dir, recursive = TRUE, showWarnings = FALSE)
+  }
+
   r_files <- list.files(file.path(pkg_dir, "R"),
     pattern = "\\.R$",
     full.names = TRUE
@@ -353,7 +362,7 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
 
   mutants <- list()
   for (src in r_files) {
-    for (m in mutate_file(src)) {
+    for (m in mutate_file(src, out_dir = mutation_dir)) {
       temp_root <- tempfile("mut_pkg_")
       pkg_copy <- file.path(temp_root, basename(pkg_dir))
       dir.create(pkg_copy, recursive = TRUE)

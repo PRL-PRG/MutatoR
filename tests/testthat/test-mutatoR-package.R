@@ -12,14 +12,14 @@ test_that("MutatoR works as a complete package", {
   # Create a test R file
   test_file <- create_test_r_file()
   on.exit(unlink(test_file))
+  mutation_dir <- tempfile("mutations_")
+  dir.create(mutation_dir)
+  on.exit(unlink(mutation_dir, recursive = TRUE), add = TRUE)
 
   # Test mutate_file
-  mutated_files <- try(mutate_file(test_file), silent = TRUE)
+  mutated_files <- try(mutate_file(test_file, out_dir = mutation_dir), silent = TRUE)
 
   if (!inherits(mutated_files, "try-error")) {
-    # Clean up mutation files
-    on.exit(unlink("mutations", recursive = TRUE), add = TRUE)
-
     # Check results
     expect_true(is.list(mutated_files))
     expect_true(length(mutated_files) > 0)
@@ -33,7 +33,7 @@ test_that("MutatoR works as a complete package", {
 
     # Run a single file test
     test_file_in_pkg <- file.path(pkg_info$pkg_dir, "R", "my_abs.R")
-    mutated_pkg_files <- try(mutate_file(test_file_in_pkg), silent = TRUE)
+    mutated_pkg_files <- try(mutate_file(test_file_in_pkg, out_dir = mutation_dir), silent = TRUE)
 
     if (!inherits(mutated_pkg_files, "try-error")) {
       expect_true(is.list(mutated_pkg_files))
