@@ -19,9 +19,8 @@ MutatoR/
 ├── R/                      # R source code
 │   ├── mutatoRpackage.R    # Core functionality
 │   └── sample/             # Sample R code
-├── src/                    # C++ source code for mutation operators
-├── tests/                  # Package tests
-├── mutations/              # Generated mutations (created at runtime)
+├── src/                    # C++ source + Catch2 C++ tests (testthat integration)
+├── tests/                  # R tests (includes compiled C++ test entrypoint)
 ├── .openai_config.R.template # Template for OpenAI API configuration
 └── DESCRIPTION             # Package metadata
 ```
@@ -51,6 +50,23 @@ mutants <- mutate_file("path/to/your/file.R")
 
 # Mutate an entire package and run tests
 result <- mutate_package("path/to/your/package")
+
+# Optional: control where mutant files are written
+result <- mutate_package("path/to/your/package", mutation_dir = tempdir())
+```
+
+## Testing
+
+MutatoR uses `testthat` for R tests and `testthat` + Catch2 for C++ tests.
+
+- C++ tests are located in `src/test-*.cpp`
+- The C++ test runner is `src/test-runner.cpp`
+- C++ tests are executed from `tests/testthat/test-cpp.R` via `run_cpp_tests("MutatoR")`
+
+Run the full test suite with:
+
+```r
+devtools::test()
 ```
 
 ## Configuration
@@ -117,6 +133,8 @@ MutatoR depends on:
 - **R Packages**:
   - **devtools**: For package development utilities
   - **testthat**: For test execution
+  - **xml2**: For parsing C++ test output (`run_cpp_tests`)
   - **future** and **furrr**: For parallel execution
   - **httr** and **jsonlite**: For OpenAI API integration
-- **C++11**: For efficient mutation operator implementation
+- **LinkingTo**: `testthat` (for Catch2 C++ test headers)
+- **C++17**: For native mutation engine implementation
