@@ -420,8 +420,7 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
 
   # Set up parallel processing
   future::plan(future::multisession,
-    workers = min(cores, length(mutants)),
-    earlySignal = TRUE
+    workers = min(cores, length(mutants))
   )
 
   mutant_ids <- names(mutants)
@@ -431,7 +430,7 @@ mutate_package <- function(pkg_dir, cores = parallel::detectCores(),
   # Run tests in parallel with progress bar
   parallel_results <- furrr::future_map(
     pkg_dir_list,
-    function(pkg) suppressMessages(suppressWarnings(run_tests(pkg))),
+    function(pkg) suppressMessages(run_tests(pkg)),
     .progress = TRUE,
     .options = furrr::furrr_options(seed = TRUE)
   )

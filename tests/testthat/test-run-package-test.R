@@ -46,7 +46,7 @@ test_check(\"testpkg\")", file.path(pkg_dir, "tests", "testthat.R"))
   expect_equal(add(2, 2), 4)
 })", file.path(pkg_dir, "tests", "testthat", "test-add.R"))
   
-  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+  result <- mutate_package(pkg_dir, cores = 1)
 
   expect_true(is.list(result))
   expect_true("package_mutants" %in% names(result))
@@ -96,7 +96,7 @@ test_check(\"badpkg\")", file.path(pkg_dir, "tests", "testthat.R"))
   expect_equal(bad_function(1), 999)
 })", file.path(pkg_dir, "tests", "testthat", "test-bad.R"))
   
-  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+  result <- mutate_package(pkg_dir, cores = 1)
 
   expect_true(is.list(result))
   expect_true(length(result$test_results) > 0)

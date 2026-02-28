@@ -52,7 +52,7 @@ test_check(\"%s\")", pkg_name, pkg_name), file.path(pkg_dir, "tests", "testthat.
 })", pkg_name), file.path(pkg_dir, "tests", "testthat", "test-my-abs.R"))
   
   # Run mutation on the minimal package
-  result <- suppressWarnings(mutate_package(pkg_dir, cores = 1))
+  result <- mutate_package(pkg_dir, cores = 1)
 
   # Check the structure of the result
   expect_true(is.list(result))
