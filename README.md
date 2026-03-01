@@ -1,3 +1,10 @@
+ <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/PRL-PRG/MutatoR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/PRL-PRG/MutatoR/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/PRL-PRG/MutatoR/graph/badge.svg)](https://app.codecov.io/gh/PRL-PRG/MutatoR)
+
+<!-- badges: end -->
+
 # MutatoR
 
 ## Overview
