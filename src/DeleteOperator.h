@@ -1,7 +1,7 @@
 #ifndef DEL_OPERATOR_H
 #define DEL_OPERATOR_H
 
-#include "Operator.hpp"
+#include "Operator.h"
 
 class DeleteOperator : public Operator {
 public: 

@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
-#include "OperatorPos.hpp"
+#include "OperatorPos.h"
 #include <R.h>
 #include <Rinternals.h>
 

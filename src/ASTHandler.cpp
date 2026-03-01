@@ -3,22 +3,22 @@
 #include <map>
 #include <functional>
 #include <iostream>
-#include "ASTHandler.hpp"
-#include "PlusOperator.hpp"
-#include "MinusOperator.hpp"
-#include "DivideOperator.hpp"
-#include "MultiplyOperator.hpp"
-#include "EqualOperator.hpp"
-#include "NotEqualOperator.hpp"
-#include "LessThanOperator.hpp"
-#include "MoreThanOperator.hpp"
-#include "LessThanOrEqualOperator.hpp"
-#include "MoreThanOrEqualOperator.hpp"
-#include "AndOperator.hpp"
-#include "OrOperator.hpp"
-#include "LogicalOrOperator.hpp"
-#include "LogicalAndOperator.hpp"
-#include "DeleteOperator.hpp"
+#include "ASTHandler.h"
+#include "PlusOperator.h"
+#include "MinusOperator.h"
+#include "DivideOperator.h"
+#include "MultiplyOperator.h"
+#include "EqualOperator.h"
+#include "NotEqualOperator.h"
+#include "LessThanOperator.h"
+#include "MoreThanOperator.h"
+#include "LessThanOrEqualOperator.h"
+#include "MoreThanOrEqualOperator.h"
+#include "AndOperator.h"
+#include "OrOperator.h"
+#include "LogicalOrOperator.h"
+#include "LogicalAndOperator.h"
+#include "DeleteOperator.h"
         
 static struct CachedSyms {
     SEXP s_lbrace  = Rf_install("{");

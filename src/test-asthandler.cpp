@@ -1,7 +1,7 @@
 #include <testthat.h>
 #include <R.h>
 #include <Rinternals.h>
-#include "ASTHandler.hpp"
+#include "ASTHandler.h"
 
 context("ASTHandler C++ tests")
 {

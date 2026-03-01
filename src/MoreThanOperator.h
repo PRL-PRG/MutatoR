@@ -1,7 +1,7 @@
 #ifndef MT_OPERATOR_H
 #define MT_OPERATOR_H
 
-#include "ComparisonOperator.hpp"
+#include "ComparisonOperator.h"
 
 class MoreThanOperator: public ComparisonOperator {
 public:

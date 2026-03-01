@@ -1,8 +1,8 @@
 #include <testthat.h>
 #include <R.h>
 #include <Rinternals.h>
-#include "ASTHandler.hpp"
-#include "Mutator.hpp"
+#include "ASTHandler.h"
+#include "Mutator.h"
 
 context("Mutator C++ tests")
 {

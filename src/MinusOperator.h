@@ -1,7 +1,7 @@
 #ifndef MINUS_OPERATOR_H
 #define MINUS_OPERATOR_H
 
-#include "ArithmeticOperator.hpp"
+#include "ArithmeticOperator.h"
 
 class MinusOperator : public ArithmeticOperator {
 public:

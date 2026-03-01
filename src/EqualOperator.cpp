@@ -1,1 +1,1 @@
-#include "EqualOperator.hpp"
+#include "EqualOperator.h"

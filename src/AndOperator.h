@@ -1,7 +1,7 @@
 #ifndef AND_OPERATOR_H
 #define AND_OPERATOR_H
 
-#include "LogicalOperator.hpp"
+#include "LogicalOperator.h"
 
 class AndOperator: public LogicalOperator{
 public: 

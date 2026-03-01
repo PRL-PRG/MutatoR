@@ -1,7 +1,7 @@
 #ifndef LT_OPERATOR_H
 #define LT_OPERATOR_H
 
-#include "ComparisonOperator.hpp"
+#include "ComparisonOperator.h"
 
 class LessThanOperator: public ComparisonOperator {
 public:

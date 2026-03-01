@@ -1,8 +1,8 @@
-// LogicalOrOperator.hpp
+// LogicalOrOperator.h
 #ifndef LOGICAL_OR_OPERATOR_H
 #define LOGICAL_OR_OPERATOR_H
 
-#include "LogicalOperator.hpp"
+#include "LogicalOperator.h"
 
 class LogicalOrOperator : public LogicalOperator {
 public:

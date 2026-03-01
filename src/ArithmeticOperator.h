@@ -2,7 +2,7 @@
 #define ARITHMETIC_OPERATOR_H
 
 #include <vector>
-#include "Operator.hpp"
+#include "Operator.h"
 
 class ArithmeticOperator : public Operator {
 public:

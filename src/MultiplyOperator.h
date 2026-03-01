@@ -1,7 +1,7 @@
 #ifndef MUL_OPERATOR_H
 #define MUL_OPERATOR_H
 
-#include "ArithmeticOperator.hpp"
+#include "ArithmeticOperator.h"
 
 class MultiplyOperator : public ArithmeticOperator {
 public:

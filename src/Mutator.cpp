@@ -1,8 +1,8 @@
 // Mutator.cpp
 #include <sstream>
 #include <iostream>  // Needed for std::cout
-#include "Mutator.hpp"
-#include "DeleteOperator.hpp"
+#include "Mutator.h"
+#include "DeleteOperator.h"
 
 std::pair<SEXP,bool> Mutator::applyMutation(SEXP expr, const std::vector<OperatorPos>& ops, int which)
 {

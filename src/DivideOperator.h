@@ -1,7 +1,7 @@
 #ifndef DIVIDE_OPERATOR_H
 #define DIVIDE_OPERATOR_H
 
-#include "ArithmeticOperator.hpp"
+#include "ArithmeticOperator.h"
 
 class DivideOperator : public ArithmeticOperator {
 public:

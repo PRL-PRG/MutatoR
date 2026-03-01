@@ -1,7 +1,7 @@
 #ifndef COMPARISON_OPERATOR_H
 #define COMPARISON_OPERATOR_H
 
-#include "Operator.hpp"
+#include "Operator.h"
 
 class ComparisonOperator : public Operator {
 public:

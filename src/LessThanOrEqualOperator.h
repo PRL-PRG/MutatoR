@@ -1,7 +1,7 @@
 #ifndef LTEQ_OPERATOR_H
 #define LTEQ_OPERATOR_H
 
-#include "ComparisonOperator.hpp"
+#include "ComparisonOperator.h"
 
 class LessThanOrEqualOperator: public ComparisonOperator {
 public:

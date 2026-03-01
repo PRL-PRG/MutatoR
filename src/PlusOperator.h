@@ -2,7 +2,7 @@
 #ifndef PLUS_OPERATOR_H
 #define PLUS_OPERATOR_H
 
-#include "ArithmeticOperator.hpp"
+#include "ArithmeticOperator.h"
 
 class PlusOperator : public ArithmeticOperator {
 public:

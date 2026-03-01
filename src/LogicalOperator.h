@@ -1,7 +1,7 @@
 #ifndef LOGICAL_OPERATOR_H
 #define LOGICAL_OPERATOR_H
 
-#include "Operator.hpp"
+#include "Operator.h"
 
 class LogicalOperator : public Operator {
 public: 

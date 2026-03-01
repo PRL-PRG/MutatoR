@@ -1,7 +1,7 @@
 #ifndef OR_OPERATOR_H
 #define OR_OPERATOR_H
 
-#include "LogicalOperator.hpp"
+#include "LogicalOperator.h"
 
 class OrOperator: public LogicalOperator {
 public:

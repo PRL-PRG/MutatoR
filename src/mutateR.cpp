@@ -18,8 +18,8 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include "ASTHandler.hpp"
-#include "Mutator.hpp"
+#include "ASTHandler.h"
+#include "Mutator.h"
 #include <vector>
 
 extern "C" SEXP C_mutate_single(SEXP expr_sexp, SEXP src_ref_sexp, bool is_inside_block)

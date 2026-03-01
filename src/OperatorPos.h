@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <memory>
-#include "Operator.hpp"
+#include "Operator.h"
 
 // Struct to Hold Operator Position and Pointer
 struct OperatorPos {

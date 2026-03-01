@@ -1,7 +1,7 @@
 #ifndef EQ_OPERATOR_H
 #define EQ_OPERATOR_H
 
-#include "ComparisonOperator.hpp"
+#include "ComparisonOperator.h"
 
 class EqualOperator: public ComparisonOperator {
 public:

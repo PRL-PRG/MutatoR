@@ -1,7 +1,7 @@
 #ifndef NEQ_OPERATOR_H
 #define NEQ_OPERATOR_H
 
-#include "ComparisonOperator.hpp"
+#include "ComparisonOperator.h"
 
 class NotEqualOperator: public ComparisonOperator {
 public:
