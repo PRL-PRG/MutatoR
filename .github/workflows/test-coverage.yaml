@@ -67,10 +67,8 @@ jobs:
           # Fail if error if not on PR, or if on PR and token is given
           fail_ci_if_error: ${{ github.event_name != 'pull_request' || secrets.CODECOV_TOKEN }}
           files: ./cobertura.xml
-          slug: PRL-PRG/MutatoR
-          plugins: noop
           disable_search: true
-          use_legacy_upload_endpoint: true
+          plugins: noop
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
 
