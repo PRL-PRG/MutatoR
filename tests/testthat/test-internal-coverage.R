@@ -1,4 +1,14 @@
+resolve_mutator_fn <- function(name) {
+    get0(name,
+        mode = "function",
+        inherits = TRUE,
+        ifnotfound = get(name, envir = asNamespace("MutatoR"))
+    )
+}
+
 test_that("delete_line_mutants creates indexed mutant files", {
+    delete_line_mutants <- resolve_mutator_fn("delete_line_mutants")
+
     src <- tempfile(fileext = ".R")
     out_dir <- tempfile("mutations_")
     dir.create(out_dir)
@@ -12,7 +22,7 @@ test_that("delete_line_mutants creates indexed mutant files", {
     ), src)
 
     set.seed(1)
-    mutants <- MutatoR:::delete_line_mutants(
+    mutants <- delete_line_mutants(
         src_file = src,
         out_dir = out_dir,
         file_base = "example.R",
@@ -28,6 +38,8 @@ test_that("delete_line_mutants creates indexed mutant files", {
 })
 
 test_that("delete_line_mutants returns empty list when no valid lines", {
+    delete_line_mutants <- resolve_mutator_fn("delete_line_mutants")
+
     src <- tempfile(fileext = ".R")
     out_dir <- tempfile("mutations_")
     dir.create(out_dir)
@@ -37,7 +49,7 @@ test_that("delete_line_mutants returns empty list when no valid lines", {
 
     mutants <- NULL
     expect_warning(
-        mutants <- MutatoR:::delete_line_mutants(src, out_dir = out_dir, max_del = 3),
+        mutants <- delete_line_mutants(src, out_dir = out_dir, max_del = 3),
         "No valid lines to delete"
     )
 
@@ -45,7 +57,9 @@ test_that("delete_line_mutants returns empty list when no valid lines", {
 })
 
 test_that("create_equivalent_mutant_prompt includes required sections", {
-    prompt <- MutatoR:::create_equivalent_mutant_prompt(
+    create_equivalent_mutant_prompt <- resolve_mutator_fn("create_equivalent_mutant_prompt")
+
+    prompt <- create_equivalent_mutant_prompt(
         original_code = "x <- 1",
         mutant_details = list(
             list(id = "file_001", mutation_info = "x <- 0"),
@@ -61,6 +75,8 @@ test_that("create_equivalent_mutant_prompt includes required sections", {
 })
 
 test_that("get_openai_config prefers environment variables", {
+    get_openai_config <- resolve_mutator_fn("get_openai_config")
+
     old_key <- Sys.getenv("OPENAI_API_KEY", unset = NA_character_)
     old_model <- Sys.getenv("OPENAI_MODEL", unset = NA_character_)
     on.exit(
@@ -72,13 +88,15 @@ test_that("get_openai_config prefers environment variables", {
     )
 
     Sys.setenv(OPENAI_API_KEY = "env-key", OPENAI_MODEL = "env-model")
-    cfg <- MutatoR:::get_openai_config()
+    cfg <- get_openai_config()
 
     expect_equal(cfg$api_key, "env-key")
     expect_equal(cfg$model, "env-model")
 })
 
 test_that("get_openai_config searches parent folders for config file", {
+    get_openai_config <- resolve_mutator_fn("get_openai_config")
+
     old_key <- Sys.getenv("OPENAI_API_KEY", unset = NA_character_)
     old_model <- Sys.getenv("OPENAI_MODEL", unset = NA_character_)
     old_wd <- getwd()
@@ -108,7 +126,7 @@ test_that("get_openai_config searches parent folders for config file", {
     )
 
     setwd(child)
-    cfg <- MutatoR:::get_openai_config()
+    cfg <- get_openai_config()
 
     expect_equal(cfg$api_key, "file-key")
     expect_equal(cfg$model, "file-model")
@@ -130,6 +148,8 @@ test_that("C_mutate_file validates input types and srcref", {
 })
 
 test_that("mutate_package supports a user-provided mutation_dir", {
+    mutate_package <- resolve_mutator_fn("mutate_package")
+
     skip_if_not_installed("devtools")
     skip_if_not_installed("furrr")
     skip_if_not_installed("future")
@@ -151,4 +171,135 @@ test_that("mutate_package supports a user-provided mutation_dir", {
 
     mutated_files <- list.files(custom_mutation_dir, pattern = "\\.R$", full.names = TRUE)
     expect_true(length(mutated_files) > 0)
+})
+
+test_that("mutate_file falls back to line-deletion mutants when C call fails", {
+    mutate_file <- resolve_mutator_fn("mutate_file")
+
+    src <- tempfile(fileext = ".R")
+    out_dir <- tempfile("mutate_file_out_")
+    dir.create(out_dir, recursive = TRUE)
+    on.exit(unlink(c(src, out_dir), recursive = TRUE), add = TRUE)
+
+    writeLines(c("f <- function(x) x + 1", "f(1)"), src)
+
+    mutants <- mutate_file(src, out_dir = out_dir)
+
+    expect_true(length(mutants) >= 1)
+    expect_true(any(vapply(mutants, function(m) grepl("deleted line", m$info), logical(1))))
+    expect_true(all(vapply(mutants, function(m) file.exists(m$path), logical(1))))
+})
+
+test_that("mutate_package handles empty test results as killed mutants", {
+    mutate_package <- resolve_mutator_fn("mutate_package")
+
+    pkg_info <- create_test_package("testMutatoREmptyResults")
+    on.exit(cleanup_test_package(pkg_info), add = TRUE)
+
+    mutation_dir <- tempfile("mutations_mock_")
+    dir.create(mutation_dir, recursive = TRUE)
+    on.exit(unlink(mutation_dir, recursive = TRUE), add = TRUE)
+
+    mut_path <- file.path(mutation_dir, "my_abs.R_001.R")
+    writeLines("my_abs <- function(x) x", mut_path)
+
+    testthat::local_mocked_bindings(
+        mutate_file = function(...) {
+            list(list(path = mut_path, info = "mock mutation"))
+        },
+        .package = "MutatoR"
+    )
+    testthat::local_mocked_bindings(
+        future_map = function(.x, .f, ...) {
+            out <- lapply(.x, function(...) list())
+            names(out) <- names(.x)
+            out
+        },
+        furrr_options = function(...) NULL,
+        .package = "furrr"
+    )
+    testthat::local_mocked_bindings(
+        plan = function(...) NULL,
+        .package = "future"
+    )
+
+    result <- mutate_package(
+        pkg_dir = pkg_info$pkg_dir,
+        cores = 1,
+        isFullLog = TRUE,
+        mutation_dir = mutation_dir
+    )
+
+    expect_true(is.list(result))
+    expect_true(length(result$test_results) >= 1)
+    expect_true(all(vapply(result$test_results, isFALSE, logical(1))))
+})
+
+test_that("mutate_package computes equivalent mutant summary when enabled", {
+    mutate_package <- resolve_mutator_fn("mutate_package")
+
+    pkg_info <- create_test_package("testMutatoREquivSummary")
+    on.exit(cleanup_test_package(pkg_info), add = TRUE)
+
+    mutation_dir <- tempfile("mutations_eq_")
+    dir.create(mutation_dir, recursive = TRUE)
+    on.exit(unlink(mutation_dir, recursive = TRUE), add = TRUE)
+
+    mut_paths <- c(
+        file.path(mutation_dir, "my_abs.R_001.R"),
+        file.path(mutation_dir, "my_abs.R_002.R"),
+        file.path(mutation_dir, "my_abs.R_003.R")
+    )
+    original_impl <- c(
+        "my_abs <- function(x) {",
+        "  if (x < 0) {",
+        "    return(-x)",
+        "  }",
+        "  return(x)",
+        "}"
+    )
+    for (p in mut_paths) writeLines(original_impl, p)
+
+    testthat::local_mocked_bindings(
+        mutate_file = function(...) {
+            list(
+                list(path = mut_paths[[1]], info = "m1"),
+                list(path = mut_paths[[2]], info = "m2"),
+                list(path = mut_paths[[3]], info = "m3")
+            )
+        },
+        identify_equivalent_mutants = function(src_file, file_mutants, api_config = NULL) {
+            ids <- names(file_mutants)
+            if (length(ids) >= 1) {
+                file_mutants[[ids[[1]]]]$equivalent <- TRUE
+                file_mutants[[ids[[1]]]]$equivalence_status <- "EQUIVALENT"
+            }
+            if (length(ids) >= 2) {
+                file_mutants[[ids[[2]]]]$equivalent <- FALSE
+                file_mutants[[ids[[2]]]]$equivalence_status <- "NOT EQUIVALENT"
+            }
+            if (length(ids) >= 3) {
+                file_mutants[[ids[[3]]]]$equivalent <- NA
+                file_mutants[[ids[[3]]]]$equivalence_status <- "DONT KNOW"
+            }
+            file_mutants
+        },
+        .package = "MutatoR"
+    )
+
+    output <- capture.output({
+        result <- mutate_package(
+            pkg_dir = pkg_info$pkg_dir,
+            cores = 1,
+            isFullLog = TRUE,
+            detectEqMutants = TRUE,
+            mutation_dir = mutation_dir
+        )
+    })
+
+    expect_true(any(grepl("Equivalent:", output)))
+    expect_true(any(grepl("Not Equivalent:", output)))
+    expect_true(any(grepl("Uncertain:", output)))
+    expect_true(is.list(result))
+    expect_true(length(result$package_mutants) >= 1)
 })
