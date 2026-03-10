@@ -7,7 +7,9 @@ on:
 
 name: test-coverage.yaml
 
-permissions: read-all
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   test-coverage:
@@ -41,7 +43,7 @@ jobs:
       - name: Ensure Codecov dependencies exist
         run: |
           sudo apt-get update
-          sudo apt-get install -y bash curl git gawk grep coreutils findutils gzip
+          sudo apt-get install -y bash curl git gawk grep gpg coreutils findutils gzip
 
       - name: Verify coverage file exists
         run: |
@@ -55,7 +57,8 @@ jobs:
           files: ./cobertura.xml
           plugins: noop
           disable_search: true
-          token: ${{ secrets.CODECOV_TOKEN }}
+          use_oidc: true
+          verbose: true
 
       - name: Show testthat output
         if: always()
