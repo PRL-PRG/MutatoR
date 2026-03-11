@@ -351,6 +351,7 @@ mutate_file <- function(src_file, out_dir = "mutations") {
 mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
                            isFullLog = FALSE, detectEqMutants = FALSE,
                            mutation_dir = NULL) {
+  pkg_dir <- normalizePath(pkg_dir, mustWork = TRUE)
   if (is.null(mutation_dir)) {
     mutation_dir <- tempfile("mutations_")
     dir.create(mutation_dir)
@@ -448,7 +449,7 @@ mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
 
     passed <- tryCatch(
       {
-        tr <- testthat::test_dir("tests/testthat", reporter = "silent")
+        tr <- testthat::test_dir("tests/testthat")
         num_failed <- sum(tr$failed)
         num_failed == 0
       },
@@ -479,7 +480,7 @@ mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
   # Run tests in parallel with progress bar
   parallel_results <- furrr::future_map(
     pkg_dir_list,
-    function(pkg) suppressMessages(run_tests(pkg)),
+    function(pkg) run_tests(pkg),
     .progress = TRUE,
     .options = furrr::furrr_options(seed = TRUE)
   )
