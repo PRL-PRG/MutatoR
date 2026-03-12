@@ -14,3 +14,4 @@ main.cpp
 cpp_tests/*.txt
 .openai_config.R
 ..Rcheck/*
+packages/

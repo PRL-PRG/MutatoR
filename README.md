@@ -54,8 +54,14 @@ library(MutatoR)
 # Mutate a single file
 mutants <- mutate_file("path/to/your/file.R")
 
+# Optional: cap returned mutants by random selection
+mutants <- mutate_file("path/to/your/file.R", max_mutants = 20)
+
 # Mutate an entire package and run tests
 result <- mutate_package("path/to/your/package")
+
+# Optional: cap tested mutants across the whole package
+result <- mutate_package("path/to/your/package", max_mutants = 100)
 
 # Optional: control where mutant files are written
 result <- mutate_package("path/to/your/package", mutation_dir = tempdir())

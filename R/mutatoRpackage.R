@@ -290,8 +290,27 @@ get_openai_config <- function() {
 }
 # nocov end
 
+# Validate and normalize optional mutant cap argument.
+normalize_max_mutants <- function(max_mutants, arg = "max_mutants") {
+  if (is.null(max_mutants)) {
+    return(NULL)
+  }
+
+  if (!is.numeric(max_mutants) || length(max_mutants) != 1 || !is.finite(max_mutants)) {
+    stop(sprintf("`%s` must be a single finite numeric value.", arg), call. = FALSE)
+  }
+
+  if (max_mutants < 0 || max_mutants %% 1 != 0) {
+    stop(sprintf("`%s` must be a non-negative whole number.", arg), call. = FALSE)
+  }
+
+  as.integer(max_mutants)
+}
+
 # Generate AST-based and line-deletion mutants for a single R file
-mutate_file <- function(src_file, out_dir = "mutations") {
+mutate_file <- function(src_file, out_dir = "mutations", max_mutants = NULL) {
+  max_mutants <- normalize_max_mutants(max_mutants)
+
   dir.create(out_dir, showWarnings = FALSE)
   options(keep.source = TRUE)
 
@@ -344,13 +363,19 @@ mutate_file <- function(src_file, out_dir = "mutations") {
     )
   )
 
+  if (!is.null(max_mutants) && length(results) > max_mutants) {
+    results <- results[base::sample.int(length(results), max_mutants)]
+  }
+
   results
 }
 
 # High-level: mutate every R file in a package, run tests in parallel, and summarize
 mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
                           isFullLog = FALSE, detectEqMutants = FALSE,
-                          mutation_dir = NULL) {
+                          mutation_dir = NULL, max_mutants = NULL) {
+  max_mutants <- normalize_max_mutants(max_mutants)
+
   pkg_dir <- normalizePath(pkg_dir, mustWork = TRUE)
   if (is.null(mutation_dir)) {
     mutation_dir <- tempfile("mutations_")
@@ -654,28 +679,37 @@ mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
     }
   }
 
+  if (!is.null(max_mutants) && length(mutants) > max_mutants) {
+    selected_ids <- base::sample(names(mutants), max_mutants)
+    mutants <- mutants[selected_ids]
+  }
+
   # options(
   #   future.devices.onMisuse = "warning",   # or "ignore"
   #   future.connections.onMisuse = "ignore" # similar check for open file‑conns
   # )
 
-  # Set up parallel processing
-  future::plan(future::multisession,
-    workers = min(cores, length(mutants))
-  )
-
   mutant_ids <- names(mutants)
-  pkg_dirs <- sapply(mutants, function(x) x$pkg)
-  pkg_dir_list <- as.list(pkg_dirs)
-  names(pkg_dir_list) <- mutant_ids
+  parallel_results <- list()
 
-  # Run tests in parallel with progress bar
-  parallel_results <- furrr::future_map(
-    pkg_dir_list,
-    function(pkg) run_tests(pkg),
-    .progress = TRUE,
-    .options = furrr::furrr_options(seed = TRUE)
-  )
+  if (length(mutants) > 0) {
+    # Set up parallel processing
+    future::plan(future::multisession,
+      workers = min(cores, length(mutants))
+    )
+
+    pkg_dirs <- sapply(mutants, function(x) x$pkg)
+    pkg_dir_list <- as.list(pkg_dirs)
+    names(pkg_dir_list) <- mutant_ids
+
+    # Run tests in parallel with progress bar
+    parallel_results <- furrr::future_map(
+      pkg_dir_list,
+      function(pkg) run_tests(pkg),
+      .progress = TRUE,
+      .options = furrr::furrr_options(seed = TRUE)
+    )
+  }
 
   # Process the parallel test results
   package_mutants <- list()
