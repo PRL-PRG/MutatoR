@@ -150,4 +150,51 @@ context("Mutator C++ tests")
         expect_true(result.first == R_NilValue);
         UNPROTECT(1);
     }
+
+    test_that("applyFlipMutation records CHARSXP original_symbol and NA file_path")
+    {
+        SEXP expr = PROTECT(Rf_lang3(Rf_install("+"), Rf_install("a"), Rf_install("b")));
+        std::vector<OperatorPos> ops;
+        ops.push_back(OperatorPos({}, std::make_unique<PlusOperator>(), 1, 1, 1, 5, Rf_mkChar("+")));
+
+        Mutator mutator;
+        auto result = mutator.applyFlipMutation(expr, ops, 0);
+
+        expect_true(result.second == true);
+        SEXP info = Rf_getAttrib(result.first, Rf_install("mutation_info"));
+        expect_true(TYPEOF(info) == VECSXP);
+
+        SEXP orig = VECTOR_ELT(info, 4); // original_symbol
+        SEXP file_path = VECTOR_ELT(info, 6);
+        expect_true(TYPEOF(orig) == STRSXP);
+        expect_true(std::string(CHAR(STRING_ELT(orig, 0))) == "+");
+        expect_true(TYPEOF(file_path) == STRSXP);
+        expect_true(STRING_ELT(file_path, 0) == NA_STRING);
+
+        if (result.second && result.first != R_NilValue)
+            UNPROTECT(1);
+        UNPROTECT(1);
+    }
+
+    test_that("applyFlipMutation records STRSXP original_symbol")
+    {
+        SEXP expr = PROTECT(Rf_lang3(Rf_install("+"), Rf_install("a"), Rf_install("b")));
+        std::vector<OperatorPos> ops;
+        ops.push_back(OperatorPos({}, std::make_unique<PlusOperator>(), 1, 1, 1, 5, Rf_mkString("+")));
+
+        Mutator mutator;
+        auto result = mutator.applyFlipMutation(expr, ops, 0);
+
+        expect_true(result.second == true);
+        SEXP info = Rf_getAttrib(result.first, Rf_install("mutation_info"));
+        expect_true(TYPEOF(info) == VECSXP);
+
+        SEXP orig = VECTOR_ELT(info, 4); // original_symbol
+        expect_true(TYPEOF(orig) == STRSXP);
+        expect_true(std::string(CHAR(STRING_ELT(orig, 0))) == "+");
+
+        if (result.second && result.first != R_NilValue)
+            UNPROTECT(1);
+        UNPROTECT(1);
+    }
 }
