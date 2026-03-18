@@ -363,16 +363,11 @@ mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
   # Sanity check: verify the unmutated package can load and its tests pass
   baseline_ok <- tryCatch(
     {
-      old_wd <- getwd()
-      on.exit(setwd(old_wd), add = TRUE)
-      setwd(pkg_dir)
-      devtools::load_all(quiet = TRUE)
-      tr <- testthat::test_dir("tests/testthat")
-      setwd(old_wd)
-      on.exit(NULL, add = FALSE)
-      if (sum(tr$failed) > 0) {
+      tr <- devtools::test(pkg_dir, reporter = testthat::SilentReporter)
+      tr_df <- as.data.frame(tr)
+      if (sum(tr_df$failed) > 0) {
         stop(sprintf("Baseline test suite has %d failure(s). Fix the tests before running mutation testing.",
-                      sum(tr$failed)))
+                      sum(tr_df$failed)))
       }
       TRUE
     },
