@@ -5,7 +5,9 @@ Authors@R: c(
     person("Pierre", "Donat-Bouillud", "pierre.donat.bouillud@fit.cvut.cz", role = c("aut", "cre")),
     person("Assanali", "Amandykov", "amandass@fit.cvut.cz", role = "aut"))
 Description: A tool to perform mutation testing for the R language, to test the effectiveness of a test suite. It supports several testing frameworks, including 'testthat'.
-    It can perform the mutation testing in parallel and scale to large codebases.
+    It can perform the mutation testing in parallel and scale to large code bases.
+URL: https://github.com/PRL-PRG/MutatoR
+BugReports: https://github.com/PRL-PRG/MutatoR/issues
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
