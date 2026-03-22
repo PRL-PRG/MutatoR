@@ -3,6 +3,7 @@
 #include <map>
 #include <functional>
 #include <iostream>
+#include <Rversion.h>
 #include "ASTHandler.h"
 #include "PlusOperator.h"
 #include "MinusOperator.h"
@@ -24,6 +25,7 @@ static struct CachedSyms
 {
     SEXP s_lbrace = Rf_install("{");
     SEXP s_rbrace = Rf_install("}");
+    SEXP s_filename = Rf_install("filename");
     SEXP s_plus = Rf_install("+");
     SEXP s_minus = Rf_install("-");
     SEXP s_mul = Rf_install("*");
@@ -41,6 +43,15 @@ static struct CachedSyms
     SEXP s_srcref = Rf_install("srcref");
     SEXP s_mutinfo = Rf_install("mutation_info");
 } SYM;
+
+static SEXP getVarFromFrame(SEXP env, SEXP name)
+{
+#if R_VERSION >= R_Version(4, 5, 0)
+    return R_getVar(name, env, FALSE);
+#else
+    return Rf_findVarInFrame(env, name);
+#endif
+}
 
 static bool extractSrcrefBounds(SEXP srcref, int &start_line, int &start_col, int &end_line, int &end_col)
 {
@@ -83,14 +94,14 @@ std::vector<OperatorPos> ASTHandler::gatherOperators(SEXP expr, SEXP src_ref,
     SEXP srcfile = Rf_getAttrib(src_ref, Rf_install("srcfile"));
     if (srcfile != R_NilValue)
     {
-        SEXP filename = Rf_getAttrib(srcfile, Rf_install("filename"));
+        SEXP filename = Rf_getAttrib(srcfile, SYM.s_filename);
         if (TYPEOF(filename) == STRSXP && LENGTH(filename) > 0)
         {
             _file_path = CHAR(STRING_ELT(filename, 0));
         }
         else if (TYPEOF(srcfile) == ENVSXP)
         {
-            SEXP env_name = Rf_findVarInFrame(srcfile, Rf_install("filename"));
+            SEXP env_name = getVarFromFrame(srcfile, SYM.s_filename);
             if (env_name != R_UnboundValue && TYPEOF(env_name) == STRSXP && LENGTH(env_name) > 0)
             {
                 _file_path = CHAR(STRING_ELT(env_name, 0));
