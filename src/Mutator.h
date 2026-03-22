@@ -6,23 +6,25 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include "MutationModel.h"
 #include "OperatorPos.h"
 #include <R.h>
 #include <Rinternals.h>
 
 // Class to Handle Mutation Application
-class Mutator {
+class Mutator
+{
 public:
     Mutator() = default;
     ~Mutator() = default;
 
     // Apply a given subset of operator flips to the original expression
-    //SEXP applyMutations(SEXP expr, const std::vector<OperatorPos>& ops, int mask);
-    std::pair<SEXP, bool> applyMutation(SEXP expr, const std::vector<OperatorPos>& ops,int whichOpIndex);
+    // SEXP applyMutations(SEXP expr, const std::vector<OperatorPos>& ops, int mask);
+    std::pair<SEXP, bool> applyMutation(SEXP expr, const std::vector<OperatorPos> &ops, int whichOpIndex);
 
-    std::pair<SEXP, bool> applyFlipMutation(SEXP expr, const std::vector<OperatorPos>& ops,int whichOpIndex);
+    std::pair<SEXP, bool> applyFlipMutation(SEXP expr, const std::vector<OperatorPos> &ops, int whichOpIndex);
 
-    std::pair<SEXP, bool> applyDeleteMutation(SEXP expr, const std::vector<OperatorPos>& ops, int whichOpIndex);
+    std::pair<SEXP, bool> applyDeleteMutation(SEXP expr, const std::vector<OperatorPos> &ops, int whichOpIndex);
 };
 
 #endif // MUTATOR_H

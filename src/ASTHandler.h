@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include "MutationModel.h"
 #include "OperatorPos.h"
 #include <R.h>
 #include <Rinternals.h>

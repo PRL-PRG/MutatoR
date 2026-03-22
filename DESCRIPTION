@@ -1,6 +1,6 @@
 Package: MutatoR
 Title: Mutation testing for the R Language
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: c(
     person("Pierre", "Donat-Bouillud", email = "pierre.donat.bouillud@fit.cvut.cz", role = c("aut", "cre")),
     person("Assanali", "Amandykov", email = "amandass@fit.cvut.cz", role = "aut"))
