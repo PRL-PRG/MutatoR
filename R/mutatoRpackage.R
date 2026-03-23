@@ -597,10 +597,13 @@ mutate_package <- function(pkg_dir, cores = max(1, parallel::detectCores() - 2),
   }
 
   if (length(mutants) > 0) {
-    # Set up parallel processing
-    future::plan(future::multisession,
-      workers = workers_to_use
-    )
+    if (workers_to_use > 1) {
+      future::plan(future::multisession,
+        workers = workers_to_use
+      )
+    } else {
+      future::plan(future::sequential)
+    }
 
     pkg_dir_list <- lapply(mutants, function(x) x$pkg)
     names(pkg_dir_list) <- mutant_ids
